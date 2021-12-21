@@ -1,14 +1,15 @@
 import sys
+from cryptography.fernet import Fernet
 from PyQt5.QtCore import QFile, QMimeData, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QPushButton
 from PyQt5.QtGui import QPixmap
 import accountFunctions
 import Ui_LoginWindow
 
-class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
-
+class CreateAccountWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
+    """Create account Window"""
     def __init__(self, parent=None):
-        super(LoginWindow, self).__init__(parent)
+        super(CreateAccountWindow, self).__init__(parent)
         self.setupUi(self)
         self.labelPasswordMatchIcon.hide()
         self.labelPasswordMatch.hide()
@@ -16,12 +17,9 @@ class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
         self.labelSecurityQuestion1Icon.hide()
         self.labelSecurityQuestion2Icon.hide()
         #user info
-        self.userName = None
-        self.password = None
-        self.securityQuestion1 = None
-        self.securityAnswer1 = None
-        self.securityQuestion2 = None
-        self.securityAnswer2 = None
+        self.userInfo = {"username": None, "password": None, "SQuestion1": None, "SAnswer1": None, "SQuestion2" : None, "SAnswer2" : None}
+        self.key = None
+        self.f = None
         #signals
         self.pushButtonCreateAccount.clicked.connect(self.pushButtonCreateAccount_Clicked)
     
@@ -34,14 +32,7 @@ class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
                 self.labelPasswordMatch.hide()
                 passwordMinLength = self.checkPasswordLength()
                 if passwordMinLength: #if password is 8 characters long
-                    self.labelPasswordMatchIcon.hide()
-                    self.labelPasswordMatch.hide()
-                    self.userName = self.lineEditUserName.text().title()
-                    self.password = self.lineEditPassword
-                    self.securityQuestion1 = self.lineQuestion1
-                    self.securityAnswer1 = self.lineAnswer1
-                    self.securityQuestion2 = self.lineQuestion2
-                    self.securityAnswer2 = self.lineAnswer2
+                    self.setUpAccount()
                 else: #password is less than 8 character
                     self.labelPasswordMatch.setText("Password is not 8 characters")
                     self.labelPasswordMatchIcon.show()
@@ -51,8 +42,23 @@ class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
                 self.labelPasswordMatchIcon.show()
                 self.labelPasswordMatch.show()
         else: #if there is missing information
-            QMessageBox.information(self, "Missing account information", "Please ensure that all the set-up information is filled out!", QMessageBox.Ok)
-
+            QMessageBox.information(self, "Missing account information", "Please ensure that all the set-up information is filled out before clicking create account!", QMessageBox.Ok)
+    
+    def setUpAccount(self):
+        self.key = accountFunctions.generateKey()
+        self.f = Fernet(self.key)
+        self.labelPasswordMatchIcon.hide()
+        self.labelPasswordMatch.hide()
+        self.userInfo["username"] = self.lineEditUserName.text().title()
+        self.userInfo["password"] = self.lineEditPassword.text()
+        self.userInfo["SQuestion1"] = self.lineQuestion1.text()
+        self.userInfo["SAnswer1"] = self.lineAnswer1.text()
+        self.userInfo["SQuestion2"] = self.lineQuestion2.text()
+        self.userInfo["SAnswer2"] = self.lineAnswer2.text()
+        accountFunctions.saveUserAccountInfo(self.userInfo, self.f)
+        print(accountFunctions.loadUserAccountInfo(self.f))
+        QMessageBox.information(self, "Success!", "Successfully created account.")
+        self.close() #close window
 
     def checkPasswordMatch(self):
         """Checks if the passwords match"""
@@ -99,23 +105,21 @@ class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
             self.labelSecurityQuestion2Icon.show()
         else:
             self.labelSecurityQuestion2Icon.hide()
+        if self.lineEditPassword.text() == "" or self.lineEditConfirmPassword.text() == "":
+            missing_info = 0
+            self.labelPasswordMatchIcon.show()
+            self.labelPasswordMatch.setText("Missing password fields")
+            self.labelPasswordMatch.show()
+        else:
+            self.labelPasswordMatchIcon.hide()
+            self.labelPasswordMatch.hide()
         return missing_info
-
-        
-    
-
-
-class MainProgram():
-
-    def __init__(self) -> None:
-        self.loggedIn = False
-        self.logInAttempts = 0
     
     
         
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = LoginWindow()
+    window = CreateAccountWindow()
     window.show()
     sys.exit(app.exec_())
