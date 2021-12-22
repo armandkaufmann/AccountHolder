@@ -12,6 +12,13 @@ def generateKey() -> str:
         key_file.write(key)
     return key
 
+def loadKey() -> str:
+    """Loads key from file, returns the key"""
+    key = None
+    with open("ox01.txt", "rb") as key_file:
+        key = key_file.read()
+    return key
+
 def saveUserAccountInfo(accountInfoDict : dict, f) -> None:
     """Saves the user account info, and encrypt the file"""
     with open("ox02.pkl", "wb") as account_info:

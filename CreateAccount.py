@@ -4,9 +4,9 @@ from PyQt5.QtCore import QFile, QMimeData, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QPushButton
 from PyQt5.QtGui import QPixmap
 import accountFunctions
-import Ui_LoginWindow
+import Ui_CreateAccount
 
-class CreateAccountWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
+class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
     """Create account Window"""
     def __init__(self, parent=None):
         super(CreateAccountWindow, self).__init__(parent)
@@ -49,14 +49,14 @@ class CreateAccountWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
         self.f = Fernet(self.key)
         self.labelPasswordMatchIcon.hide()
         self.labelPasswordMatch.hide()
-        self.userInfo["username"] = self.lineEditUserName.text().title()
+        self.userInfo["username"] = self.lineEditUserName.text().lower().strip()
         self.userInfo["password"] = self.lineEditPassword.text()
         self.userInfo["SQuestion1"] = self.lineQuestion1.text()
-        self.userInfo["SAnswer1"] = self.lineAnswer1.text()
+        self.userInfo["SAnswer1"] = self.lineAnswer1.text().lower()
         self.userInfo["SQuestion2"] = self.lineQuestion2.text()
-        self.userInfo["SAnswer2"] = self.lineAnswer2.text()
+        self.userInfo["SAnswer2"] = self.lineAnswer2.text().lower()
         accountFunctions.saveUserAccountInfo(self.userInfo, self.f)
-        QMessageBox.information(self, "Success!", "Successfully created account.")
+        QMessageBox.information(self, "Success!", "Successfully created account.", QMessageBox.Ok)
         self.close() #close window
 
     def checkPasswordMatch(self) -> bool:
