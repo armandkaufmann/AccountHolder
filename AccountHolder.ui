@@ -161,7 +161,7 @@
         </rect>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_3">
         <attribute name="title">
@@ -539,7 +539,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Click on a specific account for the selected platform to view or edit</string>
+        <string>Click on a specific account for the selected platform to view or edit account details</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

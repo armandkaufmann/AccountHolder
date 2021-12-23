@@ -290,7 +290,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.tabWidgetAccountsEncryptDecrypt.setCurrentIndex(0)
-        self.tabWidgeViewEditAccount.setCurrentIndex(0)
+        self.tabWidgeViewEditAccount.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -312,7 +312,7 @@ class Ui_MainWindow(object):
         self.pushButtonUpdateAccountInfo.setText(_translate("MainWindow", "Update Account"))
         self.labelPasswordConfirmEdit.setText(_translate("MainWindow", "Confirm Password:"))
         self.tabWidgeViewEditAccount.setTabText(self.tabWidgeViewEditAccount.indexOf(self.tab_4), _translate("MainWindow", "Edit Account Info"))
-        self.label_7.setText(_translate("MainWindow", "Click on a specific account for the selected platform to view or edit"))
+        self.label_7.setText(_translate("MainWindow", "Click on a specific account for the selected platform to view or edit account details"))
         self.pushButtonAddAccount.setText(_translate("MainWindow", "Add New Account"))
         self.labelPlatformName.setText(_translate("MainWindow", "platformName"))
         self.groupBoxAddNewService.setTitle(_translate("MainWindow", "New platform"))

@@ -13,6 +13,7 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         super(AccountHolder, self).__init__(parent)
         self.setupUi(self)
         self.frameAccountInfo.hide()
+        self.pushButtonDeleteAccountService.setEnabled(False)
         #account info
         self.f = None
         self.key = None
@@ -74,19 +75,33 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
             accountFunctions.saveUserAccounts(self.accounts, self.f) #saving to file, by overwritting current file
     
     def listWidgetServiceAccounts_CurrentRowChanged(self) -> None:
+        self.pushButtonDeleteAccountService.setEnabled(True)
         self.listWidgetAccounts.clear()
         for item in self.accounts[self.listWidgetServiceAccounts.currentRow()][1]:
             self.listWidgetAccounts.addItem(item[0])
-        self.labelPlatformName.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][0])
+        self.labelPlatformName.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][0]) #platform title ontop of the list widget
         self.tabWidgeViewEditAccount.setEnabled(False)
+        #Resetting the line edit to empty string
+        self.lineEditUsername.setText("")
+        self.lineEditPassword.setText("")
+        self.lineEditEmail.setText("")
+        #showing the account info frame that has the view account info tab, and edit account info tab
         self.frameAccountInfo.show()
     
     def listWidgetAccounts_CurrentRowChanged(self) -> None:
         self.tabWidgeViewEditAccount.setEnabled(True)
+        self.tabWidgeViewEditAccount.setCurrentIndex(0) #seting current index of tab to view account info tab
         self.lineEditPassword.setEchoMode(QLineEdit.EchoMode.Password) #setting the echo mode of password line edit to password, in-case it was changed
+        #View account info Tab
         self.lineEditUsername.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][0]) #setting username line edit
         self.lineEditPassword.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][1]) #setting password line edit
         self.lineEditEmail.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][2]) #setting email line edit 
+        #edit account info Tab
+        self.lineEditUsernameEdit.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][0]) #setting username line edit
+        self.lineEditPasswordEdit.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][1]) #setting password line edit
+        self.lineEditPasswordConfirmEdit.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][1]) #setting confirm password line edit
+        self.lineEditEmailEdit.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][2]) #setting email line edit 
+
     
     def pushButtonViewPassword_Clicked(self) -> None:
         self.lineEditPassword.setEchoMode(QLineEdit.EchoMode.Normal)
@@ -96,6 +111,8 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
     
     def pushButtonCopyPassword_Clicked(self) -> None:
         QApplication.clipboard().setText(self.lineEditPassword.text())
+        QMessageBox.information(self, "Copied to clipboard", "Your password has been copied to your clipboard. Click the 'Ok' button on this window once you are done pasting your password for login, once you click the 'Ok' button your clipboard will automatically clear for security reasons", QMessageBox.Ok)
+        QApplication.clipboard().setText(" ")
         
             
 class CreateNewPlatform(QDialog, Ui_CreateNewPlatform.Ui_Dialog):
@@ -108,6 +125,7 @@ class CreateNewPlatform(QDialog, Ui_CreateNewPlatform.Ui_Dialog):
         self.account = None
         #signlas
         self.pushButtonCreateAccount.clicked.connect(self.pushButtonCreateAccount_Clicked)
+        self.checkBoxEmailUsername.stateChanged.connect(self.checkBoxEmailUsername_StateChanged)
     
     def pushButtonCreateAccount_Clicked(self) -> None:
         if self.checkAllFields():
@@ -115,7 +133,10 @@ class CreateNewPlatform(QDialog, Ui_CreateNewPlatform.Ui_Dialog):
         else: #structure [ [platform1, [account1_username, account1_password, account1_email]], [platform2, [account1_username, account1_password, account1_email]] ]
             if self.checkPasswordMatch():
                 self.labelPlatformExample_2.hide()
-                self.account = [self.lineEditPlatform.text().title(), [[self.lineEditUsername.text(), self.lineEditPassword.text(), self.lineEditUsername_2.text()]]]
+                if self.checkBoxEmailUsername.isChecked():
+                    self.account = [self.lineEditPlatform.text().title(), [[self.lineEditUsername_2.text(), self.lineEditPassword.text(), self.lineEditUsername_2.text()]]]
+                else:
+                    self.account = [self.lineEditPlatform.text().title(), [[self.lineEditUsername.text(), self.lineEditPassword.text(), self.lineEditUsername_2.text()]]]
                 QMessageBox.information(self, "Successfully created account", "Your account has been succesfully created, account will be added to the program.", QMessageBox.Ok)
                 self.close()
             else:
@@ -133,13 +154,19 @@ class CreateNewPlatform(QDialog, Ui_CreateNewPlatform.Ui_Dialog):
             missingInfo = 1
         if self.lineEditUsername_2.text() == "":
             missingInfo = 1
-        if self.lineEditUsername.text() == "":
+        if self.lineEditUsername.text() == "" and self.checkBoxEmailUsername.isChecked() == False:
             missingInfo = 1
         if self.lineEditPassword.text() == "":
             missingInfo = 1
         if self.lineEditPasswordConfirm.text() == "":
             missingInfo = 1
         return missingInfo
+    
+    def checkBoxEmailUsername_StateChanged(self):
+        if self.checkBoxEmailUsername.isChecked():
+            self.lineEditUsername.setEnabled(False)
+        else:
+            self.lineEditUsername.setEnabled(True)
 
 
 
