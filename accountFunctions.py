@@ -34,6 +34,31 @@ def loadUserAccountInfo(f : object) -> dict:
     encrypt_file("ox02.pkl", f)
     return accountInfo
 
+def loadUserAccounts(f : object) -> dict:
+    """Return decrypted user stored accounts"""
+    accounts = None
+    decrypt_file("ox03.pkl", f)
+    with open("ox03.pkl", "rb") as account_info:
+        accounts = pickle.load(account_info)
+    encrypt_file("ox03.pkl", f)
+    return accounts
+
+def saveUserAccounts(accounts : list, f : object) -> dict:
+    """save user accounts as a pickle file, and encrypt file"""
+    with open("ox03.pkl", "wb") as accountsFile:
+        pickle.dump(accounts, accountsFile)
+    encrypt_file("ox03.pkl", f)
+    return accounts
+
+def checkAccountFileExist() -> bool:
+    try:
+        with open("ox03.pkl", "rb") as f:
+            f.read()
+    except FileNotFoundError:
+        return False
+    else:
+        return True
+
 def encrypt_file(filename : str, f : object):
     with open(filename, 'rb') as file_target:
         file_data = file_target.read()

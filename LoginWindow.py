@@ -30,7 +30,7 @@ class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
     def pushButtonRecoverAccount_Clicked(self):
         popSQuestion = SecurityQuestion(self.accountInfo[f"SQuestion{self.accountRecoveryQuestionChoice}"], self.accountInfo[f"SAnswer{self.accountRecoveryQuestionChoice}"], self)
         popSQuestion.show()
-        popSQuestion.exec_() #allow following lines of code to execute from pop up menu
+        popSQuestion.exec_() #allow following lines of code to execute from pop up menu, this code is used to transition between windows and widgets
         if popSQuestion.success: #if security question was successfully answered
             popChangePassword = ChangePassword(self)
             popChangePassword.exec_()
