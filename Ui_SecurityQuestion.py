@@ -58,7 +58,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Account Recovery"))
+        Dialog.setWindowTitle(_translate("Dialog", "Account Recovery: Security Question"))
         self.labelTitle.setText(_translate("Dialog", "Security Question"))
         self.labelQuestion.setText(_translate("Dialog", "TextLabel"))
         self.pushButtonEnterAnswer.setText(_translate("Dialog", "Enter"))

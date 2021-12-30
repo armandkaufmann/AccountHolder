@@ -4,9 +4,11 @@ from PyQt5.QtCore import QFile, QMimeData, Qt
 from PyQt5.QtWidgets import QApplication, QDialog, QFileDialog, QMainWindow, QMessageBox, QPushButton, QWidget
 from PyQt5.QtGui import QPixmap
 import accountFunctions
+import emailRecoverySend
 import Ui_LoginWindow
 import Ui_SecurityQuestion
 import Ui_ChangePassword
+import Ui_EmailSecurityCodeRecovery
 
 class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
     """Login Window"""
@@ -16,7 +18,7 @@ class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
         self.labelIncorrectInfo.hide()
         self.loginSuccess = False
         #account info
-        self.accountInfo = None #structure -> {"username": None, "password": None, "SQuestion1": None, "SAnswer1": None, "SQuestion2" : None, "SAnswer2" : None}
+        self.accountInfo = None #structure -> {"username": None, "email": None, "password": None, "SQuestion1": None, "SAnswer1": None, "SQuestion2" : None, "SAnswer2" : None}
         self.f = None
         self.key = None
         self.getKey()
@@ -32,11 +34,17 @@ class LoginWindow(QMainWindow, Ui_LoginWindow.Ui_MainWindow):
         popSQuestion.show()
         popSQuestion.exec_() #allow following lines of code to execute from pop up menu, this code is used to transition between windows and widgets
         if popSQuestion.success: #if security question was successfully answered
-            popChangePassword = ChangePassword(self)
-            popChangePassword.exec_()
-            if popChangePassword.success:
-                self.accountInfo["password"] = popChangePassword.newPassword
-                accountFunctions.saveUserAccountInfo(self.accountInfo, self.f)
+            code = "".join([str(random.randint(0,9)) for i in range(9)])
+            popSecurityCodeDialog = EmailSecurityCode(self, code, self.accountInfo["username"], self.accountInfo["email"])
+            popSecurityCodeDialog.show()
+            popSecurityCodeDialog.exec_()
+            if popSecurityCodeDialog.success: #if security code was successfully entered
+                popChangePassword = ChangePassword(self)
+                popChangePassword.show()
+                popChangePassword.exec_()
+                if popChangePassword.success:
+                    self.accountInfo["password"] = popChangePassword.newPassword
+                    accountFunctions.saveUserAccountInfo(self.accountInfo, self.f)
     
     def getKey(self) -> None:
         """Gets the encryption key"""
@@ -91,7 +99,7 @@ class SecurityQuestion(QDialog, Ui_SecurityQuestion.Ui_Dialog):
     def pushButtonEnterAnswer_Clicked(self):
         if self.lineEdit.text().lower() == self.answer.lower():
             self.label.hide()
-            QMessageBox.information(self, "Security Question Successful", "Security answer is correct, please choose a new password.", QMessageBox.Ok)
+            QMessageBox.information(self, "Security Question Successful", "Security answer is correct, please continue with account recovery.", QMessageBox.Ok)
             self.success = True
             self.close()
         else:
@@ -123,6 +131,32 @@ class ChangePassword(QDialog, Ui_ChangePassword.Ui_Dialog):
                 self.success = True
                 self.close()
 
+class EmailSecurityCode(QDialog, Ui_EmailSecurityCodeRecovery.Ui_Dialog):
+    """Enter security codes sent to user email"""
+    def __init__(self, parent, code : str, username : str, emailAddress : str):
+        super().__init__(parent)
+        self.code = code
+        self.username = username
+        self.emailAddress = emailAddress
+        self.sendEmailCode() #send the code to the email address of the user
+        self.success = False
+        self.setupUi(self)
+        self.labelIncorrectCode.hide()
+        #signals
+        self.pushButton.clicked.connect(self.pushButton_Clicked)
+    
+    def sendEmailCode(self):
+        emailRecoverySend.sendEmail(self.code, self.emailAddress, self.username)
+    
+    def pushButton_Clicked(self):
+        if self.lineEdit.text() == self.code:
+            self.labelIncorrectCode.hide()
+            QMessageBox.information(self, "Security Code Correct", "Security code entered is correct, please continue with account recovery.", QMessageBox.Ok)
+            self.success = True
+            self.close()
+        else:
+            self.labelIncorrectCode.setText("Code is incorrect.")
+            self.labelIncorrectCode.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

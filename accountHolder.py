@@ -75,6 +75,7 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
             accountFunctions.saveUserAccounts(self.accounts, self.f) #saving to file, by overwritting current file
     
     def listWidgetServiceAccounts_CurrentRowChanged(self) -> None:
+        self.tabWidgeViewEditAccount.setCurrentIndex(0)
         self.pushButtonDeleteAccountService.setEnabled(True)
         self.listWidgetAccounts.clear()
         for item in self.accounts[self.listWidgetServiceAccounts.currentRow()][1]:

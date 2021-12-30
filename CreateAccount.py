@@ -14,10 +14,11 @@ class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
         self.labelPasswordMatchIcon.hide()
         self.labelPasswordMatch.hide()
         self.labelNameIcon.hide()
+        self.labelEmailMatch.hide()
         self.labelSecurityQuestion1Icon.hide()
         self.labelSecurityQuestion2Icon.hide()
         #user info
-        self.userInfo = {"username": None, "password": None, "SQuestion1": None, "SAnswer1": None, "SQuestion2" : None, "SAnswer2" : None}
+        self.userInfo = {"username": None, "email": None, "password": None, "SQuestion1": None, "SAnswer1": None, "SQuestion2" : None, "SAnswer2" : None}
         self.key = None
         self.f = None
         #signals
@@ -45,11 +46,13 @@ class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
             QMessageBox.information(self, "Missing account information", "Please ensure that all the set-up information is filled out before clicking create account!", QMessageBox.Ok)
     
     def setUpAccount(self):
+        """Set up the account, and save into a file"""
         self.key = accountFunctions.generateKey()
         self.f = Fernet(self.key)
         self.labelPasswordMatchIcon.hide()
         self.labelPasswordMatch.hide()
         self.userInfo["username"] = self.lineEditUserName.text().lower().strip()
+        self.userInfo["email"] = self.lineEditEmailConfirm.text().lower().strip()
         self.userInfo["password"] = self.lineEditPassword.text()
         self.userInfo["SQuestion1"] = self.lineQuestion1.text()
         self.userInfo["SAnswer1"] = self.lineAnswer1.text().lower()
@@ -73,6 +76,13 @@ class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
     
     def checkPasswordLength(self) -> bool:
         if len(self.lineEditPassword.text()) >= 8:
+            return True
+        else:
+            return False
+    
+    def checkEmailField(self) -> bool:
+        """Check if the emails match, returns True if match, False if not"""
+        if self.lineEditEmail.text() == self.lineEditEmailConfirm.text():
             return True
         else:
             return False
@@ -105,6 +115,12 @@ class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
             self.labelSecurityQuestion2Icon.show()
         else:
             self.labelSecurityQuestion2Icon.hide()
+        if self.lineEditEmail.text() == "" or self.lineEditEmailConfirm.text() == "": #check if email fields are blank or empty
+            self.labelEmailMatch.setText("Please enter email")
+            self.labelEmailMatch.show()
+            missing_info = 0
+        else:
+            self.labelEmailMatch.hide()
         if self.lineEditPassword.text() == "" or self.lineEditConfirmPassword.text() == "":
             missing_info = 0
             self.labelPasswordMatchIcon.show()
@@ -113,10 +129,14 @@ class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
         else:
             self.labelPasswordMatchIcon.hide()
             self.labelPasswordMatch.hide()
+        if self.checkEmailField(): #checking the email field
+            self.labelEmailMatch.hide()
+        else:
+            missing_info = 0
+            self.labelEmailMatch.setText("Email addresses don't match")
+            self.labelEmailMatch.show()
         return missing_info
     
-    
-        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
