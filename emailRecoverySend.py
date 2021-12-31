@@ -9,7 +9,7 @@ def sendEmail(codes : str, reciever: str, username : str):
         smtp.login('accholderpy@gmail.com', 'iohpezcmmqguaoos')
 
         subject = "Account Holder: Account recovery code"
-        body = f"Hello {username},\nplease enter the following code to recover your account:\n\n{codes}"
+        body = f"Hello {username},\n\nplease enter the following code to recover your account:\n\n{codes}"
         msg = f'Subject: {subject}\n\n{body}'
 
         smtp.sendmail('accholderpy@gmail.com', reciever, msg)

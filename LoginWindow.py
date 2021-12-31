@@ -146,7 +146,10 @@ class EmailSecurityCode(QDialog, Ui_EmailSecurityCodeRecovery.Ui_Dialog):
         self.pushButton.clicked.connect(self.pushButton_Clicked)
     
     def sendEmailCode(self):
-        emailRecoverySend.sendEmail(self.code, self.emailAddress, self.username)
+        try:
+            emailRecoverySend.sendEmail(self.code, self.emailAddress, self.username)
+        except:
+            QMessageBox.information(self, "Error", "An error ocurred when attempting to send the security code, please ensure that you are connected to the internet and try again.")
     
     def pushButton_Clicked(self):
         if self.lineEdit.text() == self.code:
