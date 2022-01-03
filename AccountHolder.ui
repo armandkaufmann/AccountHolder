@@ -61,6 +61,9 @@
         <pointsize>18</pointsize>
        </font>
       </property>
+      <property name="statusTip">
+       <string>List of all platforms stored on the program.</string>
+      </property>
      </widget>
      <widget class="Line" name="line">
       <property name="geometry">
@@ -150,6 +153,9 @@
          <pointsize>14</pointsize>
         </font>
        </property>
+       <property name="statusTip">
+        <string>List of all accounts stored within selected platform.</string>
+       </property>
       </widget>
       <widget class="QTabWidget" name="tabWidgeViewEditAccount">
        <property name="geometry">
@@ -159,6 +165,9 @@
          <width>471</width>
          <height>321</height>
         </rect>
+       </property>
+       <property name="statusTip">
+        <string>View and edit the information about the a specific account in the platform selected.</string>
        </property>
        <property name="currentIndex">
         <number>1</number>
@@ -247,6 +256,9 @@
            <height>31</height>
           </rect>
          </property>
+         <property name="statusTip">
+          <string>View the password of the account.</string>
+         </property>
          <property name="text">
           <string>View password</string>
          </property>
@@ -262,6 +274,9 @@
            <width>101</width>
            <height>31</height>
           </rect>
+         </property>
+         <property name="statusTip">
+          <string>Copy the password to the clipboard, password will automatically clear from the clipboard after pressing &quot;Ok&quot; on the prompt.</string>
          </property>
          <property name="text">
           <string>Copy password</string>
@@ -326,6 +341,9 @@
            <height>31</height>
           </rect>
          </property>
+         <property name="statusTip">
+          <string>Hide the password and convert to a secure string.</string>
+         </property>
          <property name="text">
           <string>Hide Password</string>
          </property>
@@ -346,6 +364,9 @@
            <width>151</width>
            <height>31</height>
           </rect>
+         </property>
+         <property name="statusTip">
+          <string>Delete the selected account from the stored platform.</string>
          </property>
          <property name="text">
           <string>Delete Account</string>
@@ -481,6 +502,9 @@
            <height>31</height>
           </rect>
          </property>
+         <property name="statusTip">
+          <string>If changes are made, click this to update the information.</string>
+         </property>
          <property name="text">
           <string>Update Account</string>
          </property>
@@ -589,6 +613,9 @@
          <height>31</height>
         </rect>
        </property>
+       <property name="statusTip">
+        <string>Add additional accounts to the same platform.</string>
+       </property>
        <property name="text">
         <string>Add New Account</string>
        </property>
@@ -684,6 +711,9 @@
          <bold>false</bold>
         </font>
        </property>
+       <property name="statusTip">
+        <string>Create a new platform that holds the account specific to that platform.</string>
+       </property>
        <property name="text">
         <string>Add New</string>
        </property>
@@ -756,6 +786,9 @@
          <bold>false</bold>
         </font>
        </property>
+       <property name="statusTip">
+        <string>Deleting a platform will remove the platform and all accompanying accounts in the program.</string>
+       </property>
        <property name="text">
         <string>Delete</string>
        </property>
@@ -790,6 +823,268 @@
      <attribute name="title">
       <string>Encrypt/Decrypt Files</string>
      </attribute>
+     <widget class="QListWidget" name="listWidgetFiles">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>80</y>
+        <width>731</width>
+        <height>192</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_3">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>9</y>
+        <width>731</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Files</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBoxEncryption">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>380</y>
+        <width>351</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Encryption</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <widget class="QPushButton" name="pushButtonAddFile_2">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>50</y>
+         <width>121</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="statusTip">
+        <string>Encrypt a selected file.</string>
+       </property>
+       <property name="text">
+        <string>Encrypt File</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButtonAddFile_3">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>50</y>
+         <width>151</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="statusTip">
+        <string>Encrypt all files in the list.</string>
+       </property>
+       <property name="text">
+        <string>Encrypt All Files</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButtonAddFile">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>290</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="statusTip">
+       <string>Add a file to the list to encrypt and decrypt.</string>
+      </property>
+      <property name="whatsThis">
+       <string/>
+      </property>
+      <property name="text">
+       <string>Load File</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonRemoveFile">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>290</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="statusTip">
+       <string>Remove a file from the list. This does not remove the file from your computer.</string>
+      </property>
+      <property name="text">
+       <string>Remove File</string>
+      </property>
+     </widget>
+     <widget class="Line" name="line_4">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>330</y>
+        <width>731</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>50</y>
+        <width>731</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Encrypt files to protect sensitive information. Decrypt file before opening/using.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBoxEncryption_2">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>530</y>
+        <width>351</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Decryption</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <widget class="QPushButton" name="pushButtonAddFile_6">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>50</y>
+         <width>121</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="statusTip">
+        <string>Decrypt selected encrypted file.</string>
+       </property>
+       <property name="text">
+        <string>Decrypt File</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButtonAddFile_7">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>50</y>
+         <width>151</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="statusTip">
+        <string>Decrypt all encrypted files in the list.</string>
+       </property>
+       <property name="text">
+        <string>Decrypt All Files</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
    </widget>
   </widget>

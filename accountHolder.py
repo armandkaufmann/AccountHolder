@@ -20,9 +20,12 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         self.key = None
         self.accountInfo = None
         self.accounts = [] #structure [ [platform1, [ [account1_username, account1_password, account1_email],  [account1_username, account1_password, account1_email]] ]]
+        self.filesToEncrypt = []
         self.getKey() #get key and f from file
         self.getAccountInfo() #get account username and password
         self.getAccountsToMemory() #initially load accounts file into memory, automatically adds to list widget
+        self.loadFilesToEncrypt() #structure -> [[filePath, isEncrypted (True or False)]]
+        self.disableFileOption()
         #signals
         self.pushButtonAddNewAccountService.clicked.connect(self.pushButtonAddNewAccountService_Clicked)
         self.listWidgetServiceAccounts.currentRowChanged.connect(self.listWidgetServiceAccounts_CurrentRowChanged)
@@ -36,13 +39,20 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         self.pushButtonAddAccount.clicked.connect(self.pushButtonAddAccount_Clicked)
         self.pushButtonDeleteAccount.clicked.connect(self.pushButtonDeleteAccount_Clicked)
         self.pushButtonUpdateAccountInfo.clicked.connect(self.pushButtonUpdateAccountInfo_Clicked)
+        #load files and ecnrypt/decrypt
+        self.pushButtonAddFile.clicked.connect(self.pushButtonAddFile_Clicked)
+        self.listWidgetFiles.currentRowChanged.connect(self.listWidgetFiles_CurrentRowChanged)
+        self.pushButtonRemoveFile.clicked.connect(self.pushButtonRemoveFile_Clicked)
+        self.pushButtonAddFile_2.clicked.connect(self.pushButtonAddFile_2_Clicked) #encrypt file button
+        self.pushButtonAddFile_6.clicked.connect(self.pushButtonAddFile_6_Clicked) #decrypt file button
 
     def getKey(self) -> None:
         """Gets the encryption key"""
         try:
             self.key = accountFunctions.loadKey()
-        except FileNotFoundError:
+        except FileNotFoundError: #can't find the encryption key
             QMessageBox.information(self, "Error", "Could not find encryption key file.", QMessageBox.Ok)
+            self.close()
         else:
             self.f = Fernet(self.key)
     
@@ -50,8 +60,9 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         """Gets the account info"""
         try:
             self.accountInfo = accountFunctions.loadUserAccountInfo(self.f)
-        except FileNotFoundError:
+        except FileNotFoundError: #can't find the account info
             QMessageBox.information(self, "Error", "Could not find the account file.", QMessageBox.Ok)
+            self.close()
     
     def getAccountsToMemory(self) -> None:
         """To initially load the accounts from file to memory. If there are no accounts, or no account """
@@ -212,7 +223,89 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
                     QMessageBox.information(self, "Password does not match", "The new password you have entered does not match, please ensure that the passwords match.", QMessageBox.Ok)
                     self.lineEditPasswordEdit.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][1])
                     self.lineEditPasswordConfirmEdit.setText(self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][1])
+    
+    def loadFilesToEncrypt(self) -> None:
+        """Loads the files to encrypt to memory, and update the list widget. If the file"""
+        if accountFunctions.checkFileToEncryptExist("ox04.pkl"):
+            filesToEncrypt = accountFunctions.loadFilesToEncryptList(self.f) #structure -> [[filepath, isEncrypted(True or False)]]
+            if filesToEncrypt != []:
+                self.filesToEncrypt = filesToEncrypt
+                self.updateFilesListWidget()
+        else:
+            self.filesToEncrypt = [] #return empty list
 
+    def getFileName(self) -> str:
+        """File dialog will open, user will point to the file, returns the full path of the file"""
+        return QFileDialog.getOpenFileName(self, "Load File", "C:\\")[0] #open a file dialog box to point to file
+    
+    def updateFilesListWidget(self) -> None:
+        """Updates the files list widget"""
+        self.listWidgetFiles.clear() #clear the list widget
+        if self.filesToEncrypt != []: #if the files to encrypt is not empty
+            for fileE in self.filesToEncrypt: #adding all the files to the list widget
+                fileName = fileE[0].split("/")[-1]
+                self.listWidgetFiles.addItem(f"{fileName}\t[{'ENCRYPTED' * fileE[1]}{'DECRYPTED' * (not fileE[1])}]")
+    
+    def pushButtonAddFile_Clicked(self) -> None:
+        """Load file button in the encrypt/decrypt tab is clicked"""
+        fileName = self.getFileName()
+        if fileName != "":
+            fileExists = False
+            for fileE in self.filesToEncrypt: #checking if the file already exists in program
+                if fileName == fileE[0]:
+                    fileExists = True
+                    break
+            if fileExists:
+                QMessageBox.information(self, 'File Already Stored', "That file already exists. You can not add the same files multiple times, only one instance of the file can exist.", QMessageBox.Ok)
+            else: #if the file doesn't exist in the program
+                self.filesToEncrypt.append([fileName, False])
+                self.updateFilesListWidget()
+                accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+    
+    def enableFileOptions(self) -> None:
+        self.pushButtonRemoveFile.setEnabled(True)
+        self.groupBoxEncryption.setEnabled(True)
+        self.groupBoxEncryption_2.setEnabled(True)
+        self.pushButtonRemoveFile.setEnabled(True)
+        self.pushButtonAddFile_2.setEnabled(True)
+        self.pushButtonAddFile_6.setEnabled(True)
+    
+    def disableFileOption(self) -> None:
+        if len(self.filesToEncrypt) > 0:
+            self.pushButtonRemoveFile.setEnabled(False)
+            self.pushButtonAddFile_2.setEnabled(False)
+            self.pushButtonAddFile_6.setEnabled(False)
+        else:
+            self.pushButtonRemoveFile.setEnabled(False)
+            self.groupBoxEncryption.setEnabled(False)
+            self.groupBoxEncryption_2.setEnabled(False)
+    
+    def listWidgetFiles_CurrentRowChanged(self) -> None:
+        self.enableFileOptions()
+    
+    def pushButtonRemoveFile_Clicked(self) -> None:
+        removeFile = QMessageBox.question(self, "Remove File?", "Are you sure you want to remove this file from the program?", QMessageBox.Yes, QMessageBox.No)
+        if removeFile == QMessageBox.Yes:
+            self.filesToEncrypt.pop(self.listWidgetFiles.currentRow())
+            self.updateFilesListWidget()
+            accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+            self.disableFileOption()
+    
+    def pushButtonAddFile_2_Clicked(self) -> None: #encrypting file button pushed
+        accountFunctions.encrypt_file(self.filesToEncrypt[self.listWidgetFiles.currentRow()][0], self.f)
+        self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] = True
+        self.updateFilesListWidget()
+        accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+        fileName = self.filesToEncrypt[self.listWidgetFiles.currentRow()][0].split("/")[-1]
+        QMessageBox.information(self, "File Encryption Successful", f"Successfully encrypted:\n\n{fileName}")
+    
+    def pushButtonAddFile_6_Clicked(self) -> None: #decrypting file button pushed
+        accountFunctions.decrypt_file(self.filesToEncrypt[self.listWidgetFiles.currentRow()][0], self.f)
+        self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] = False
+        self.updateFilesListWidget()
+        accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+        fileName = self.filesToEncrypt[self.listWidgetFiles.currentRow()][0].split("/")[-1]
+        QMessageBox.information(self, "File Decryption Successful", f"Successfully decrypted:\n\n{fileName}")
 
             
 class CreateNewPlatform(QDialog, Ui_CreateNewPlatform.Ui_Dialog):
