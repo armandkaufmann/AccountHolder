@@ -45,6 +45,8 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         self.pushButtonRemoveFile.clicked.connect(self.pushButtonRemoveFile_Clicked)
         self.pushButtonAddFile_2.clicked.connect(self.pushButtonAddFile_2_Clicked) #encrypt file button
         self.pushButtonAddFile_6.clicked.connect(self.pushButtonAddFile_6_Clicked) #decrypt file button
+        self.pushButtonAddFile_3.clicked.connect(self.pushButtonAddFile_3_Clicked) #encrypt all files button
+        self.pushButtonAddFile_7.clicked.connect(self.pushButtonAddFile_7_Clicked)
 
     def getKey(self) -> None:
         """Gets the encryption key"""
@@ -166,8 +168,7 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
             self.reloadListWidgetServiceAccounts() #resetting the list widget
             accountFunctions.saveUserAccounts(self.accounts, self.f)
             self.frameAccountInfo.hide()
-            if len(self.accounts) == 0:
-                self.pushButtonDeleteAccountService.setEnabled(False)
+            self.pushButtonDeleteAccountService.setEnabled(False)
     
     def pushButtonAddAccount_Clicked(self) -> None:
         """Adding new account to selected platform"""
@@ -231,6 +232,7 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
             if filesToEncrypt != []:
                 self.filesToEncrypt = filesToEncrypt
                 self.updateFilesListWidget()
+                self.pushButtonAddFile_3.setEnabled(True)
         else:
             self.filesToEncrypt = [] #return empty list
 
@@ -244,7 +246,7 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         if self.filesToEncrypt != []: #if the files to encrypt is not empty
             for fileE in self.filesToEncrypt: #adding all the files to the list widget
                 fileName = fileE[0].split("/")[-1]
-                self.listWidgetFiles.addItem(f"{fileName}\t[{'ENCRYPTED' * fileE[1]}{'DECRYPTED' * (not fileE[1])}]")
+                self.listWidgetFiles.addItem(f"{fileName}\t\t[{'ENCRYPTED' * fileE[1]}{'DECRYPTED' * (not fileE[1])}]")
     
     def pushButtonAddFile_Clicked(self) -> None:
         """Load file button in the encrypt/decrypt tab is clicked"""
@@ -282,32 +284,111 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
     
     def listWidgetFiles_CurrentRowChanged(self) -> None:
         self.enableFileOptions()
-    
+        if len(self.filesToEncrypt) > 0:
+            if self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] == True:
+                self.pushButtonAddFile_2.setEnabled(False)
+                self.pushButtonAddFile_6.setEnabled(True)
+            else:
+                self.pushButtonAddFile_6.setEnabled(False)
+                self.pushButtonAddFile_2.setEnabled(True)
+        else:
+            self.disableFileOption()
+
     def pushButtonRemoveFile_Clicked(self) -> None:
+        """Remove file path stored in files list widget"""
         removeFile = QMessageBox.question(self, "Remove File?", "Are you sure you want to remove this file from the program?", QMessageBox.Yes, QMessageBox.No)
         if removeFile == QMessageBox.Yes:
+            if self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] == True: #if the file is encrypted and user wants to remove it
+                accountFunctions.decrypt_file(self.filesToEncrypt[self.listWidgetFiles.currentRow()][0], self.f) #decrypt file before removing it
             self.filesToEncrypt.pop(self.listWidgetFiles.currentRow())
             self.updateFilesListWidget()
             accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
             self.disableFileOption()
     
     def pushButtonAddFile_2_Clicked(self) -> None: #encrypting file button pushed
-        accountFunctions.encrypt_file(self.filesToEncrypt[self.listWidgetFiles.currentRow()][0], self.f)
-        self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] = True
-        self.updateFilesListWidget()
-        accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
-        fileName = self.filesToEncrypt[self.listWidgetFiles.currentRow()][0].split("/")[-1]
-        QMessageBox.information(self, "File Encryption Successful", f"Successfully encrypted:\n\n{fileName}")
+        if self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] == False: #if the file is not encrypted
+            currRow = self.listWidgetFiles.currentRow()
+            encryptFile = accountFunctions.encrypt_file(self.filesToEncrypt[self.listWidgetFiles.currentRow()][0], self.f)
+            fileName = self.filesToEncrypt[self.listWidgetFiles.currentRow()][0].split("/")[-1]
+            if encryptFile:
+                self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] = True
+                self.updateFilesListWidget()
+                accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+                QMessageBox.information(self, "File Encryption Successful       ", f"Successfully encrypted:\n\n{fileName}")
+                self.listWidgetFiles.setCurrentRow(currRow)
+            else:
+                QMessageBox.information(self, "File not Found", f"The file you want to decrypt could not be found.\n\nPlease ensure that the file is in this directory: {self.filesToEncrypt[self.listWidgetFiles.currentRow()][0]}\n\nWith the name and extension: {fileName}")
     
     def pushButtonAddFile_6_Clicked(self) -> None: #decrypting file button pushed
-        accountFunctions.decrypt_file(self.filesToEncrypt[self.listWidgetFiles.currentRow()][0], self.f)
-        self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] = False
-        self.updateFilesListWidget()
-        accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
-        fileName = self.filesToEncrypt[self.listWidgetFiles.currentRow()][0].split("/")[-1]
-        QMessageBox.information(self, "File Decryption Successful", f"Successfully decrypted:\n\n{fileName}")
+        if self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] == True: #if the file is encrypted
+            currRow = self.listWidgetFiles.currentRow()
+            decryptFile = accountFunctions.decrypt_file(self.filesToEncrypt[self.listWidgetFiles.currentRow()][0], self.f)
+            fileName = self.filesToEncrypt[self.listWidgetFiles.currentRow()][0].split("/")[-1]
+            if decryptFile:
+                self.filesToEncrypt[self.listWidgetFiles.currentRow()][1] = False
+                self.updateFilesListWidget()
+                accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+                QMessageBox.information(self, "File Decryption Successful       ", f"Successfully decrypted:\n\n{fileName}")
+                self.listWidgetFiles.setCurrentRow(currRow)
+            else:
+                QMessageBox.information(self, "File not Found", f"The file you want to decrypt could not be found.\n\nPlease ensure that the file is in this directory: {self.filesToEncrypt[self.listWidgetFiles.currentRow()][0]}\n\nWith the name and extension: {fileName}")
 
-            
+    def pushButtonAddFile_3_Clicked(self) -> None: #encrypt all files
+        """Encrypt all files button is pressed. Encrypts all files in the list, update list widget, output success message box."""
+        if len(self.filesToEncrypt) > 0: #if there are files stored
+            stringFilesEncrypted = ""
+            stringFilesError = ""
+            for fileE in self.filesToEncrypt:
+                if fileE[1] == False: #if file to encrypt is not encrypted
+                    fileName = fileE[0].split("/")[-1]
+                    encryptFile = accountFunctions.encrypt_file(fileE[0], self.f) #if file can't be found
+                    if encryptFile == False: #if file is not found
+                        QMessageBox.information(self, "File not Found", f"The file you want to encrypt could not be found.\n\nPlease ensure that the file is in this directory: {fileE[0]}\n\nWith the name and extension: {fileName}")
+                        stringFilesError += fileName + "\n"
+                    else:
+                        stringFilesEncrypted += fileName + "\n"
+                        fileE[1] = True #change file status to encrypted
+            self.updateFilesListWidget()
+            accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+            if stringFilesEncrypted != "" and stringFilesError == "":
+                QMessageBox.information(self, "File Encryption Successful       ", f"Successfully encrypted:\n\n{stringFilesEncrypted}")
+            elif stringFilesEncrypted == "" and stringFilesError != "":
+                QMessageBox.information(self, "No Files Encrypted       ", f"Could not encrypt the following files:\n\n{stringFilesError}")
+            elif stringFilesEncrypted != "" and stringFilesError != "":
+                QMessageBox.information(self, "File Encryption Partially Successful       ", f"Successfully encrypted:\n\n{stringFilesEncrypted}\n\nCould not encrypt the following files:\n\n{stringFilesError}")
+        else:
+            QMessageBox.information(self, "No Files To Encrypt", f"There are currently no files stored in the program to encrypt.")
+    
+    def pushButtonAddFile_7_Clicked(self) -> None:
+        """decrypt all files button is pressed. Encrypts all files in the list, update list widget, output success message box."""
+        if len(self.filesToEncrypt) > 0: #if there are files stored
+            stringFilesDecrypted = ""
+            stringFilesError = ""
+            for fileE in self.filesToEncrypt:
+                if fileE[1] == True: #if file to encrypt is encrypted
+                    fileName = fileE[0].split("/")[-1]
+                    decryptFile = accountFunctions.decrypt_file(fileE[0], self.f) #if file can't be found
+                    if decryptFile == False: #if file is not found
+                        QMessageBox.information(self, "File not Found", f"The file you want to decrypt could not be found.\n\nPlease ensure that the file is in this directory: {fileE[0]}\n\nWith the name and extension: {fileName}")
+                        stringFilesError += fileName + "\n"
+                    else:
+                        stringFilesDecrypted += fileName + "\n"
+                        fileE[1] = False #change to not encrypted
+            self.updateFilesListWidget()
+            accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+            self.disableFileOption()
+            if stringFilesDecrypted != "" and stringFilesError == "":
+                QMessageBox.information(self, "File Decryption Successful       ", f"Successfully decrypted:\n\n{stringFilesDecrypted}")
+            elif stringFilesDecrypted == "" and stringFilesError != "":
+                QMessageBox.information(self, "No Files Decrypted       ", f"Could not decrypt the following files:\n\n{stringFilesError}")
+            elif stringFilesDecrypted != "" and stringFilesError != "":
+                QMessageBox.information(self, "File Decrpytion Partially Successful       ", f"Successfully decrypted:\n\n{stringFilesDecrypted}\n\nCould not decrypt the following files:\n\n{stringFilesError}")
+        else:
+            QMessageBox.information(self, "No files to decrypt", f"There are currently no files stored in the program to decrypt.")
+
+
+
+
 class CreateNewPlatform(QDialog, Ui_CreateNewPlatform.Ui_Dialog):
     """Security question dialog window for account recovery"""
 

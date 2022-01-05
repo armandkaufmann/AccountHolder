@@ -87,15 +87,27 @@ def loadFilesToEncryptList(f : object) -> list:
     return accounts
 
 def encrypt_file(filename : str, f : object):
-    with open(filename, 'rb') as file_target:
-        file_data = file_target.read()
-    encrypted_data = f.encrypt(file_data)
-    with open(filename, 'wb') as file_target:
-        file_target.write(encrypted_data)
+    """Encrypt file with token, if file not found will return False"""
+    try:
+        with open(filename, 'rb') as file_target:
+            file_data = file_target.read()
+        encrypted_data = f.encrypt(file_data)
+        with open(filename, 'wb') as file_target:
+            file_target.write(encrypted_data)
+    except FileNotFoundError:
+        return False
+    else:
+        return True
         
 def decrypt_file(filename : str, f : object):
-    with open(filename, 'rb') as file_target:
-        file_data = file_target.read()
-    decrypted_data = f.decrypt(file_data)
-    with open(filename, 'wb') as file_target:
-        file_target.write(decrypted_data)
+    """Decrypt file with token, if file not found will return False"""
+    try:
+        with open(filename, 'rb') as file_target:
+            file_data = file_target.read()
+        decrypted_data = f.decrypt(file_data)
+        with open(filename, 'wb') as file_target:
+            file_target.write(decrypted_data)
+    except FileNotFoundError:
+        return False
+    else:
+        return True

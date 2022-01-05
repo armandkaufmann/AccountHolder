@@ -124,6 +124,7 @@ class ChangePassword(QDialog, Ui_ChangePassword.Ui_Dialog):
         else:
             if self.lineEditPassword.text() != self.lineEditPasswordConfirm.text(): #if passwords do not match
                 self.label.setText("Passwords do not match!")
+                self.label.show()
             else:
                 self.label.hide()
                 self.newPassword = self.lineEditPassword.text()
