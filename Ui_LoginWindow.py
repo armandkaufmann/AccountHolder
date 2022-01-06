@@ -81,7 +81,7 @@ class Ui_MainWindow(object):
         self.labelIncorrectInfo.setStyleSheet("color:red;")
         self.labelIncorrectInfo.setObjectName("labelIncorrectInfo")
         self.pushButtonRecoverAccount = QtWidgets.QPushButton(self.frameLogin)
-        self.pushButtonRecoverAccount.setGeometry(QtCore.QRect(350, 500, 111, 23))
+        self.pushButtonRecoverAccount.setGeometry(QtCore.QRect(350, 492, 111, 31))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.pushButtonRecoverAccount.setFont(font)
