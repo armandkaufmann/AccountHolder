@@ -7,6 +7,7 @@ import accountFunctions
 import Ui_AccountHolder
 import Ui_CreateNewPlatform
 import Ui_AddNewAccountToPlatform
+import Ui_AccountSettingsWindow
 
 class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
     """Main account holder program"""
@@ -39,6 +40,8 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         self.pushButtonAddAccount.clicked.connect(self.pushButtonAddAccount_Clicked)
         self.pushButtonDeleteAccount.clicked.connect(self.pushButtonDeleteAccount_Clicked)
         self.pushButtonUpdateAccountInfo.clicked.connect(self.pushButtonUpdateAccountInfo_Clicked)
+        #settings
+        self.actionSettings.triggered.connect(self.actionSettings_Triggered)
         #load files and ecnrypt/decrypt
         self.pushButtonAddFile.clicked.connect(self.pushButtonAddFile_Clicked)
         self.listWidgetFiles.currentRowChanged.connect(self.listWidgetFiles_CurrentRowChanged)
@@ -46,7 +49,16 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         self.pushButtonAddFile_2.clicked.connect(self.pushButtonAddFile_2_Clicked) #encrypt file button
         self.pushButtonAddFile_6.clicked.connect(self.pushButtonAddFile_6_Clicked) #decrypt file button
         self.pushButtonAddFile_3.clicked.connect(self.pushButtonAddFile_3_Clicked) #encrypt all files button
-        self.pushButtonAddFile_7.clicked.connect(self.pushButtonAddFile_7_Clicked)
+        self.pushButtonAddFile_7.clicked.connect(self.pushButtonAddFile_7_Clicked) #decrypt all files button
+    
+    def actionSettings_Triggered(self) -> None:
+        """Account settings window, if changes are made then changes will be saved to user account info file"""
+        accountSettings = AccountSettingsWindow(self, self.accountInfo)
+        accountSettings.show()
+        accountSettings.exec_()
+        if accountSettings.changesMade: #if there are changes made to the account information/security question
+            self.accountInfo = accountSettings.accountInfo
+            accountFunctions.saveUserAccountInfo(self.accountInfo, self.f)
 
     def getKey(self) -> None:
         """Gets the encryption key"""
@@ -200,6 +212,7 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
             self.lineEditEmail.setText("")
     
     def pushButtonUpdateAccountInfo_Clicked(self) -> None:
+        """Update account info button is pushed. If there are changes made, then changes will be saved to accounts file"""
         changesMade = False
         if self.lineEditUsernameEdit.text() != self.accounts[self.listWidgetServiceAccounts.currentRow()][1][self.listWidgetAccounts.currentRow()][0]:
             changesMade = True
@@ -233,6 +246,8 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
                 self.filesToEncrypt = filesToEncrypt
                 self.updateFilesListWidget()
                 self.pushButtonAddFile_3.setEnabled(True)
+                self.enableFileOptions()
+                self.disableFileOption()
         else:
             self.filesToEncrypt = [] #return empty list
 
@@ -265,6 +280,7 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
                 accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
     
     def enableFileOptions(self) -> None:
+        """Enable the file options in the encrypt and decrypt file tab"""
         self.pushButtonRemoveFile.setEnabled(True)
         self.groupBoxEncryption.setEnabled(True)
         self.groupBoxEncryption_2.setEnabled(True)
@@ -273,6 +289,7 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
         self.pushButtonAddFile_6.setEnabled(True)
     
     def disableFileOption(self) -> None:
+        """Disable some file options based on if there are/aren't files stored in the program"""
         if len(self.filesToEncrypt) > 0:
             self.pushButtonRemoveFile.setEnabled(False)
             self.pushButtonAddFile_2.setEnabled(False)
@@ -385,8 +402,6 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
                 QMessageBox.information(self, "File Decrpytion Partially Successful       ", f"Successfully decrypted:\n\n{stringFilesDecrypted}\n\nCould not decrypt the following files:\n\n{stringFilesError}")
         else:
             QMessageBox.information(self, "No files to decrypt", f"There are currently no files stored in the program to decrypt.")
-
-
 
 
 class CreateNewPlatform(QDialog, Ui_CreateNewPlatform.Ui_Dialog):
@@ -516,6 +531,119 @@ class CreateNewAccountInPlatform(QDialog, Ui_AddNewAccountToPlatform.Ui_Dialog):
             self.lineEditUsername.setEnabled(True)
 
 
+class AccountSettingsWindow(QDialog, Ui_AccountSettingsWindow.Ui_Dialog):
+    """Account settings dialog window"""
+
+    def __init__(self, parent, accountInfo):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.labelPasswordWarning.hide()
+        self.labelSecurityQuestion1Warning.hide()
+        self.labelSecurityQuestion2Warning.hide()
+        self.accountInfo = accountInfo #account info structure -> {"username": None, "email": None, "password": None, "SQuestion1": None, "SAnswer1": None, "SQuestion2" : None, "SAnswer2" : None}
+        self.setUpInfo()
+        self.tabWidgetAccountInformation.setCurrentIndex(0)
+        self.changesMade = False
+        #signals
+        self.pushButtonEditInfo.clicked.connect(self.pushButtonEditInfo_Clicked) #edit account info button clicked
+        self.pushButtonEditQuestions.clicked.connect(self.pushButtonEditQuestions_Clicked)
+        self.tabWidgetAccountInformation.currentChanged.connect(self.tabWidgetAccountInformation_CurrentChanged)
+        self.pushButtonViewPassword.clicked.connect(self.pushButtonViewPassword_Clicked)
+        self.pushButtonHidePassword.clicked.connect(self.pushButtonHidePassword_Clicked)
+        #saving
+        self.pushButtonSaveChanges.clicked.connect(self.pushButtonSaveChanges_Clicked)
+        self.pushButtonSaveChanges_2.clicked.connect(self.pushButtonSaveChanges_2_Clicked)
+    
+    def setUpInfo(self) -> None:
+        """Set up the information in the account information tab, security questions tab, and resetting read only property and password to secure string"""
+        #account info
+        self.lineEditUsername.setText(self.accountInfo["username"])
+        self.lineEditPassword.setText(self.accountInfo["password"])
+        self.lineEditPasswordConfirm.setText(self.accountInfo["password"])
+        self.lineEditEmail.setText(self.accountInfo["email"])
+        self.lineEditUsername.setReadOnly(True)
+        self.lineEditPassword.setReadOnly(True)
+        self.lineEditPasswordConfirm.setReadOnly(True)
+        self.lineEditEmail.setReadOnly(True)
+        self.pushButtonSaveChanges.setEnabled(False)
+        self.pushButtonEditInfo.setEnabled(True)
+        self.pushButtonHidePassword_Clicked()
+        #security questions
+        self.lineEditQuestion1.setText(self.accountInfo["SQuestion1"])
+        self.lineEditAnswer1.setText(self.accountInfo["SAnswer1"])
+        self.lineEditQuestion2.setText(self.accountInfo["SQuestion2"])
+        self.lineEditAnswer2.setText(self.accountInfo["SAnswer2"])
+        self.lineEditQuestion1.setReadOnly(True)
+        self.lineEditAnswer1.setReadOnly(True)
+        self.lineEditQuestion2.setReadOnly(True)
+        self.lineEditAnswer2.setReadOnly(True)
+        self.pushButtonEditQuestions.setEnabled(True)
+        self.pushButtonSaveChanges_2.setEnabled(False)
+    
+    def pushButtonEditInfo_Clicked(self) -> None:
+        self.lineEditUsername.setReadOnly(False)
+        self.lineEditPassword.setReadOnly(False)
+        self.lineEditPasswordConfirm.setReadOnly(False)
+        self.lineEditEmail.setReadOnly(False)
+        self.pushButtonSaveChanges.setEnabled(True)
+        self.pushButtonEditInfo.setEnabled(False)
+    
+    def pushButtonEditQuestions_Clicked(self) -> None:
+        self.lineEditQuestion1.setReadOnly(False)
+        self.lineEditAnswer1.setReadOnly(False)
+        self.lineEditQuestion2.setReadOnly(False)
+        self.lineEditAnswer2.setReadOnly(False)
+        self.pushButtonEditQuestions.setEnabled(False)
+        self.pushButtonSaveChanges_2.setEnabled(True)
+    
+    def tabWidgetAccountInformation_CurrentChanged(self) -> None:
+        self.setUpInfo()
+    
+    def pushButtonViewPassword_Clicked(self) -> None:
+        self.lineEditPassword.setEchoMode(QLineEdit.EchoMode.Normal)
+        self.lineEditPasswordConfirm.setEchoMode(QLineEdit.EchoMode.Normal)
+    
+    def pushButtonHidePassword_Clicked(self) -> None:
+        self.lineEditPassword.setEchoMode(QLineEdit.EchoMode.Password)
+        self.lineEditPasswordConfirm.setEchoMode(QLineEdit.EchoMode.Password)
+    
+    def pushButtonSaveChanges_Clicked(self) -> None:
+        """Save the changes made to the account information tab"""
+        if self.lineEditPassword.text() == self.lineEditPasswordConfirm.text(): #if passwords match
+            if len(self.lineEditPassword.text()) >= 8: #if password is 8 or more characters
+                self.accountInfo["username"] = self.lineEditUsername.text()
+                self.accountInfo["password"] = self.lineEditPassword.text()
+                self.accountInfo["email"] = self.lineEditEmail.text()
+                self.changesMade = True
+                QMessageBox.information(self, "Account information Changed", "Account informtion has been changed. Please close the account settings window to ensure that the changes made are saved in the program.", QMessageBox.Ok)
+                self.labelPasswordWarning.hide()
+                self.setUpInfo()
+            else:
+                self.labelPasswordWarning.setText("Password is not 8 characters")
+                self.labelPasswordWarning.show()
+        else:
+            self.labelPasswordWarning.setText("Passwords do not match")
+            self.labelPasswordWarning.show()
+    
+    def pushButtonSaveChanges_2_Clicked(self) -> None:
+        """Save the changes made to the security questions tab"""
+        if self.lineEditQuestion1.text() != "" and self.lineEditAnswer1.text() != "":
+            if self.lineEditQuestion2.text() != "" and self.lineEditAnswer2.text() != "":
+                self.accountInfo["SQuestion1"] = self.lineEditQuestion1.text()
+                self.accountInfo["SAnswer1"] = self.lineEditAnswer1.text()
+                self.accountInfo["SQuestion2"] = self.lineEditQuestion2.text()
+                self.accountInfo["SAnswer2"] = self.lineEditAnswer2.text()
+                self.changesMade = True
+                QMessageBox.information(self, "Account Security Questions Changed", "Account security questions have been changed. Please close the account settings window to ensure that the changes made are saved in the program.", QMessageBox.Ok)
+                self.labelSecurityQuestion1Warning.hide()
+                self.labelSecurityQuestion2Warning.hide()
+                self.setUpInfo()
+            else:
+                self.labelSecurityQuestion2Warning.setText("Security Question/Answer is blank")
+                self.labelSecurityQuestion2Warning.show()
+        else:
+            self.labelSecurityQuestion1Warning.setText("Security Question/Answer is blank")
+            self.labelSecurityQuestion1Warning.show()
 
 
 if __name__ == "__main__":
