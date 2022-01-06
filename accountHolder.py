@@ -278,6 +278,8 @@ class AccountHolder(QMainWindow, Ui_AccountHolder.Ui_MainWindow):
                 self.filesToEncrypt.append([fileName, False])
                 self.updateFilesListWidget()
                 accountFunctions.saveFilesToEncrypt(self.filesToEncrypt, self.f)
+                self.enableFileOptions()
+                self.disableFileOption()
     
     def enableFileOptions(self) -> None:
         """Enable the file options in the encrypt and decrypt file tab"""
@@ -598,6 +600,9 @@ class AccountSettingsWindow(QDialog, Ui_AccountSettingsWindow.Ui_Dialog):
     
     def tabWidgetAccountInformation_CurrentChanged(self) -> None:
         self.setUpInfo()
+        self.labelSecurityQuestion1Warning.hide()
+        self.labelSecurityQuestion2Warning.hide()
+        self.labelPasswordWarning.hide()
     
     def pushButtonViewPassword_Clicked(self) -> None:
         self.lineEditPassword.setEchoMode(QLineEdit.EchoMode.Normal)
