@@ -651,8 +651,8 @@ class AccountSettingsWindow(QDialog, Ui_AccountSettingsWindow.Ui_Dialog):
             self.labelSecurityQuestion1Warning.show()
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = AccountHolder()
-    window.show()
-    sys.exit(app.exec_())
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     window = AccountHolder()
+#     window.show()
+#     sys.exit(app.exec_())

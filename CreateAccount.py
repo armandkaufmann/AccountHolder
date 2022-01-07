@@ -17,6 +17,7 @@ class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
         self.labelEmailMatch.hide()
         self.labelSecurityQuestion1Icon.hide()
         self.labelSecurityQuestion2Icon.hide()
+        self.success = False
         #user info
         self.userInfo = {"username": None, "email": None, "password": None, "SQuestion1": None, "SAnswer1": None, "SQuestion2" : None, "SAnswer2" : None}
         self.key = None
@@ -59,6 +60,7 @@ class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
         self.userInfo["SQuestion2"] = self.lineQuestion2.text()
         self.userInfo["SAnswer2"] = self.lineAnswer2.text().lower()
         accountFunctions.saveUserAccountInfo(self.userInfo, self.f)
+        self.success = True
         QMessageBox.information(self, "Success!", "Successfully created account.", QMessageBox.Ok)
         self.close() #close window
 
@@ -138,8 +140,8 @@ class CreateAccountWindow(QMainWindow, Ui_CreateAccount.Ui_MainWindow):
         return missing_info
     
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = CreateAccountWindow()
-    window.show()
-    sys.exit(app.exec_())
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     window = CreateAccountWindow()
+#     window.show()
+#     sys.exit(app.exec_())

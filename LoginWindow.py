@@ -162,8 +162,8 @@ class EmailSecurityCode(QDialog, Ui_EmailSecurityCodeRecovery.Ui_Dialog):
             self.labelIncorrectCode.setText("Code is incorrect.")
             self.labelIncorrectCode.show()
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = LoginWindow()
-    window.show()
-    sys.exit(app.exec_())
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     window = LoginWindow()
+#     window.show()
+#     sys.exit(app.exec_())

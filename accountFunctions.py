@@ -60,6 +60,16 @@ def checkAccountFileExist() -> bool:
     else:
         return True
 
+def checkAccountExist() -> bool:
+    """Check if the file that holds the account exists, returns bool based on that."""
+    try:
+        with open("ox02.pkl", "rb") as f:
+            f.read()
+    except FileNotFoundError:
+        return False
+    else:
+        return True
+
 #File Encryption funcions
 def checkFileToEncryptExist(filePath : str) -> bool:
     """Checks if the file to encrpypt or decrpyt exists"""
